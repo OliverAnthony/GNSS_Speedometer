@@ -12,6 +12,7 @@
 #include "main.h"
 #include "lv_port_disp.h"
 #include <stdbool.h>
+#include "dma.h"
 
 /*********************
  *      DEFINES
@@ -47,7 +48,6 @@ static inline void LCD_Address_Set(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t 
 /**********************
  *  STATIC VARIABLES
  **********************/
-extern DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
 uint8_t buf_u8[LV_BUFFER_SIZE * 2];
 
 /**********************
@@ -269,20 +269,7 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
         }
         LCD_Address_Set(area->x1, area->y1, area->x2, area->y2);
         HAL_DMA_Start_IT(&hdma_memtomem_dma1_channel2, (uint32_t)&buf_u8, LCD_DATA_ADDR, flush_size * 2);
-        // for(y = area->y1; y <= area->y2; y++) {
-        //     for(x = area->x1; x <= area->x2; x++) {
-        //         /*Put a pixel to the display. For example:*/
-        //         /*put_px(x, y, *color_p)*/
-        //         *(__IO uint8_t *)LCD_DATA_ADDR = (uint8_t)(color_p->full >> 8);
-        //         *(__IO uint8_t *)LCD_DATA_ADDR = (uint8_t)(color_p->full & 0xFF);
-        //         color_p++;
-        //     }
-        // }
     }
-
-    /*IMPORTANT!!!
-     *Inform the graphics library that you are ready with the flushing*/
-    // lv_disp_flush_ready(disp_drv);
 }
 
 __attribute__((always_inline))
