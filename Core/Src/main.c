@@ -52,13 +52,12 @@
 
 /* USER CODE BEGIN PV */
 lv_disp_drv_t * disp_drv;
-extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_rx, hdma_usart2_rx;
 uint16_t ADC[2], mVBat;
 uint8_t RxBuffer[RX_BUFFER_SIZE];
 extern NMEAData_t NMEAData;
 lv_obj_t *mVBat_label, *locateStatus_label, *speed_label, *course_label, *time_label,
 *quality_label, *satelliteCount_label, *altitude_label, *hdop_label, *vdop_label;
-extern DMA_HandleTypeDef hdma_usart2_rx;
 uint8_t brightness_tmp[3], brightness;
 /* USER CODE END PV */
 

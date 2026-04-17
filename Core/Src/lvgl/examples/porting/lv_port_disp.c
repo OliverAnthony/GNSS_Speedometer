@@ -92,7 +92,7 @@ void lv_port_disp_init(void)
 
     /* Example for 1) */
     static lv_disp_draw_buf_t draw_buf_dsc_1;
-    static lv_color_t buf_1[LV_BUFFER_SIZE];                          /*A buffer for 10 rows*/
+    static lv_color_t buf_1[LV_BUFFER_SIZE];
     lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, LV_BUFFER_SIZE);   /*Initialize the display buffer*/
 
     // /* Example for 2) */
