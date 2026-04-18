@@ -58,7 +58,8 @@ uint8_t RxBuffer[RX_BUFFER_SIZE];
 extern NMEAData_t NMEAData;
 lv_obj_t *mVBat_label, *locateStatus_label, *speed_label, *course_label, *time_label,
 *quality_label, *satelliteCount_label, *altitude_label, *hdop_label, *vdop_label;
-uint8_t brightness_tmp[3], brightness;
+uint8_t brightness_tmp[4];
+uint16_t brightness;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -126,7 +127,7 @@ int main(void)
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&ADC[0], 2);
   HAL_UARTEx_ReceiveToIdle_DMA(&UART_GNSS, &RxBuffer[0], RX_BUFFER_SIZE);
   __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
-  HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 3);
+  HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 4);
   __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
   HAL_TIM_PWM_Start(&TIM_BL, TIM_CHANNEL_2);
   HAL_TIM_Base_Start_IT(&TIM_VBat);
@@ -289,12 +290,15 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
     case 3:
       brightness = (brightness_tmp[0] - '0') * 100 + (brightness_tmp[1] - '0') * 10 + brightness_tmp[2] - '0';
       break;
+    case 4:
+      brightness = (brightness_tmp[0] - '0') * 1000 + (brightness_tmp[1] - '0') * 100 + (brightness_tmp[2] - '0') * 10 + brightness_tmp[3] - '0';
+      break;
     default:
       break;
     }
-    brightness = brightness > 100 ? 100 : brightness;
+    brightness = brightness > 7200 ? 7200 : brightness;
     __HAL_TIM_SET_COMPARE(&TIM_BL, TIM_CHANNEL_2, brightness);
-    HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 3);
+    HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 4);
     __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
   }
   return;
