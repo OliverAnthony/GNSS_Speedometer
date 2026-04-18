@@ -119,7 +119,7 @@ int main(void)
   lv_port_disp_init();
   LVGL_UI_Init();
   disp_drv = lv_disp_get_default()->driver;
-  HAL_DMA_RegisterCallback(&hdma_memtomem_dma1_channel2, HAL_DMA_XFER_CPLT_CB_ID, LVGL_DMA_pCallback);
+  HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_channel1, HAL_DMA_XFER_CPLT_CB_ID, LVGL_DMA_pCallback);
   /* USER CODE END 2 */
 
   /* Infinite loop */
