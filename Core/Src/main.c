@@ -52,7 +52,7 @@
 
 /* USER CODE BEGIN PV */
 lv_disp_drv_t * disp_drv;
-extern DMA_HandleTypeDef hdma_usart1_rx, hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_usart2_rx, hdma_usart3_rx;
 uint16_t ADC[2], mVBat;
 uint8_t RxBuffer[RX_BUFFER_SIZE];
 extern NMEAData_t NMEAData;
@@ -108,10 +108,10 @@ int main(void)
   MX_ADC1_Init();
   MX_FSMC_Init();
   MX_TIM5_Init();
-  MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_TIM6_Init();
-  MX_I2C1_Init();
+  MX_USART3_UART_Init();
+  MX_I2C2_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
   HAL_ADCEx_Calibration_Start(&hadc1);
@@ -126,7 +126,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&ADC[0], 2);
   HAL_UARTEx_ReceiveToIdle_DMA(&UART_GNSS, &RxBuffer[0], RX_BUFFER_SIZE);
-  __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
+  __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
   HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 4);
   __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
   HAL_TIM_PWM_Start(&TIM_BL, TIM_CHANNEL_2);
@@ -275,7 +275,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
     NMEAHandler(&RxBuffer[0], size);
     LVGL_UI_Refresh();
     HAL_UARTEx_ReceiveToIdle_DMA(&UART_GNSS, &RxBuffer[0], RX_BUFFER_SIZE);
-    __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
+    __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
   }
   else if (huart == &UART_PC)
   {
