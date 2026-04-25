@@ -60,7 +60,7 @@ void Error_Handler(void);
 #define TIM_BL htim5
 #define UART_PC huart2
 #define TIM_VBat htim6
-#define UART_GNSS huart1
+#define UART_GNSS huart3
 #define GNSS_DET_Pin GPIO_PIN_2
 #define GNSS_DET_GPIO_Port GPIOE
 #define LCD_RST_Pin GPIO_PIN_5
