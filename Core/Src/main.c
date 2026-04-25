@@ -31,6 +31,7 @@
 #include "nmea.h"
 #include "lvgl/lvgl.h"
 #include "lvgl/examples/porting/lv_port_disp.h"
+#include "als.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,7 +59,7 @@ uint8_t RxBuffer[RX_BUFFER_SIZE];
 extern NMEAData_t NMEAData;
 lv_obj_t *mVBat_label, *locateStatus_label, *speed_label, *course_label, *time_label,
 *quality_label, *satelliteCount_label, *altitude_label, *hdop_label, *vdop_label;
-uint8_t brightness_tmp[4];
+uint8_t brightness_tmp[4], als_data[3];
 uint16_t brightness;
 /* USER CODE END PV */
 
@@ -120,6 +121,7 @@ int main(void)
   LVGL_UI_Init();
   disp_drv = lv_disp_get_default()->driver;
   HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_channel1, HAL_DMA_XFER_CPLT_CB_ID, LVGL_DMA_pCallback);
+  ALS_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -131,6 +133,7 @@ int main(void)
   __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
   HAL_TIM_PWM_Start(&TIM_BL, TIM_CHANNEL_2);
   HAL_TIM_Base_Start_IT(&TIM_VBat);
+  HAL_TIM_Base_Start_IT(&TIM_ALS);
   while (ADC[1] == 0);
   mVBat = 1550 * ADC[1] / ADC[0];
   lv_label_set_text_fmt(mVBat_label, "%dmV", mVBat);
@@ -208,6 +211,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     mVBat = 1550 * ADC[1] / ADC[0];
     lv_label_set_text_fmt(mVBat_label, "%dmV", mVBat);
+  }
+  else if (htim == &TIM_ALS)
+  {
+    ALS_Read(ALS_DATA_0, &als_data[0], 3);
+  }
+  return;
+}
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (hi2c == &I2C_ALS)
+  {
+    uint16_t duty;
+    uint32_t als_value = (als_data[2] << 16) | (als_data[1] << 8) | als_data[0];
+    if (als_value >= 3200)
+      duty = 5000 + (als_value - 3200) * (7200 - 5000) / (100000 - 3200);
+    else
+      duty = 80 + als_value * (5000 - 80) / 3200;
+    duty = (duty + __HAL_TIM_GetCompare(&TIM_BL, TIM_CHANNEL_2) * 15) / 16;
+    duty = duty > 7200 ? 7200 : duty;
+    __HAL_TIM_SET_COMPARE(&TIM_BL, TIM_CHANNEL_2, duty);
   }
   return;
 }

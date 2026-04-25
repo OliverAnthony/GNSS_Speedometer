@@ -9,6 +9,6 @@ void ALS_Init(void)
 
 void ALS_Read(const uint8_t reg, uint8_t *data, const uint16_t size)
 {
-    HAL_I2C_Mem_Read(&I2C_ALS, ALS_ADDR, reg, 1, data, size, 100);
+    HAL_I2C_Mem_Read_DMA(&I2C_ALS, ALS_ADDR, reg, 1, data, size);
     return;
 }
