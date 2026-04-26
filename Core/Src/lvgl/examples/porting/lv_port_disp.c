@@ -92,7 +92,7 @@ void lv_port_disp_init(void)
 
     /* Example for 1) */
     static lv_disp_draw_buf_t draw_buf_dsc_1;
-    static lv_color_t buf_1[LV_BUFFER_SIZE];                          /*A buffer for 10 rows*/
+    static lv_color_t buf_1[LV_BUFFER_SIZE];
     lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, LV_BUFFER_SIZE);   /*Initialize the display buffer*/
 
     // /* Example for 2) */
@@ -268,7 +268,7 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
             color_p++;
         }
         LCD_Address_Set(area->x1, area->y1, area->x2, area->y2);
-        HAL_DMA_Start_IT(&hdma_memtomem_dma1_channel2, (uint32_t)&buf_u8, LCD_DATA_ADDR, flush_size * 2);
+        HAL_DMA_Start_IT(&hdma_memtomem_dma2_channel1, (uint32_t)&buf_u8, LCD_DATA_ADDR, flush_size * 2);
     }
 }
 

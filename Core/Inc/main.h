@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "i2c.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -59,8 +59,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define TIM_BL htim5
 #define UART_PC huart2
+#define I2C_ALS hi2c2
 #define TIM_VBat htim6
 #define UART_GNSS huart3
+#define TIM_ALS htim7
 #define GNSS_DET_Pin GPIO_PIN_2
 #define GNSS_DET_GPIO_Port GPIOE
 #define LCD_RST_Pin GPIO_PIN_5

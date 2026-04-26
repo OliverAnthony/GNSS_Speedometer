@@ -20,6 +20,7 @@
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
+#include "i2c.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -30,6 +31,7 @@
 #include "nmea.h"
 #include "lvgl/lvgl.h"
 #include "lvgl/examples/porting/lv_port_disp.h"
+#include "als.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,7 +59,8 @@ uint8_t RxBuffer[RX_BUFFER_SIZE];
 extern NMEAData_t NMEAData;
 lv_obj_t *mVBat_label, *locateStatus_label, *speed_label, *course_label, *time_label,
 *quality_label, *satelliteCount_label, *altitude_label, *hdop_label, *vdop_label;
-uint8_t brightness_tmp[3], brightness;
+uint8_t brightness_tmp[4], als_data[3];
+uint16_t brightness;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -109,13 +112,16 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM6_Init();
   MX_USART3_UART_Init();
+  MX_I2C2_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
   HAL_ADCEx_Calibration_Start(&hadc1);
   lv_init();
   lv_port_disp_init();
   LVGL_UI_Init();
   disp_drv = lv_disp_get_default()->driver;
-  HAL_DMA_RegisterCallback(&hdma_memtomem_dma1_channel2, HAL_DMA_XFER_CPLT_CB_ID, LVGL_DMA_pCallback);
+  HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_channel1, HAL_DMA_XFER_CPLT_CB_ID, LVGL_DMA_pCallback);
+  ALS_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -123,10 +129,11 @@ int main(void)
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&ADC[0], 2);
   HAL_UARTEx_ReceiveToIdle_DMA(&UART_GNSS, &RxBuffer[0], RX_BUFFER_SIZE);
   __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
-  HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 3);
+  HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 4);
   __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
   HAL_TIM_PWM_Start(&TIM_BL, TIM_CHANNEL_2);
   HAL_TIM_Base_Start_IT(&TIM_VBat);
+  HAL_TIM_Base_Start_IT(&TIM_ALS);
   while (ADC[1] == 0);
   mVBat = 1550 * ADC[1] / ADC[0];
   lv_label_set_text_fmt(mVBat_label, "%dmV", mVBat);
@@ -205,6 +212,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     mVBat = 1550 * ADC[1] / ADC[0];
     lv_label_set_text_fmt(mVBat_label, "%dmV", mVBat);
   }
+  else if (htim == &TIM_ALS)
+  {
+    ALS_Read(ALS_DATA_0, &als_data[0], 3);
+  }
+  return;
+}
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (hi2c == &I2C_ALS)
+  {
+    uint16_t duty;
+    uint32_t als_value = (als_data[2] << 16) | (als_data[1] << 8) | als_data[0];
+    if (als_value >= 3200)
+      duty = 5000 + (als_value - 3200) * (7200 - 5000) / (100000 - 3200);
+    else
+      duty = 80 + als_value * (5000 - 80) / 3200;
+    duty = (duty + __HAL_TIM_GetCompare(&TIM_BL, TIM_CHANNEL_2) * 63) / 64;
+    duty = duty > 7200 ? 7200 : duty;
+    __HAL_TIM_SET_COMPARE(&TIM_BL, TIM_CHANNEL_2, duty);
+  }
   return;
 }
 
@@ -272,27 +300,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
     LVGL_UI_Refresh();
     HAL_UARTEx_ReceiveToIdle_DMA(&UART_GNSS, &RxBuffer[0], RX_BUFFER_SIZE);
     __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
-  }
-  else if (huart == &UART_PC)
-  {
-    switch (size)
-    {
-    case 1:
-      brightness = brightness_tmp[0] - '0';
-      break;
-    case 2:
-      brightness = (brightness_tmp[0] - '0') * 10 + brightness_tmp[1] - '0';
-      break;
-    case 3:
-      brightness = (brightness_tmp[0] - '0') * 100 + (brightness_tmp[1] - '0') * 10 + brightness_tmp[2] - '0';
-      break;
-    default:
-      break;
-    }
-    brightness = brightness > 100 ? 100 : brightness;
-    __HAL_TIM_SET_COMPARE(&TIM_BL, TIM_CHANNEL_2, brightness);
-    HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 3);
-    __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
   }
   return;
 }
