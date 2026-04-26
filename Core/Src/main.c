@@ -229,7 +229,7 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
       duty = 5000 + (als_value - 3200) * (7200 - 5000) / (100000 - 3200);
     else
       duty = 80 + als_value * (5000 - 80) / 3200;
-    duty = (duty + __HAL_TIM_GetCompare(&TIM_BL, TIM_CHANNEL_2) * 63) / 64;
+    duty = (duty + __HAL_TIM_GET_COMPARE(&TIM_BL, TIM_CHANNEL_2) * 63) / 64;
     duty = duty > 7200 ? 7200 : duty;
     __HAL_TIM_SET_COMPARE(&TIM_BL, TIM_CHANNEL_2, duty);
   }
