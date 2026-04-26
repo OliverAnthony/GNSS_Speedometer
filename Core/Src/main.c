@@ -301,30 +301,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
     HAL_UARTEx_ReceiveToIdle_DMA(&UART_GNSS, &RxBuffer[0], RX_BUFFER_SIZE);
     __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
   }
-  else if (huart == &UART_PC)
-  {
-    switch (size)
-    {
-    case 1:
-      brightness = brightness_tmp[0] - '0';
-      break;
-    case 2:
-      brightness = (brightness_tmp[0] - '0') * 10 + brightness_tmp[1] - '0';
-      break;
-    case 3:
-      brightness = (brightness_tmp[0] - '0') * 100 + (brightness_tmp[1] - '0') * 10 + brightness_tmp[2] - '0';
-      break;
-    case 4:
-      brightness = (brightness_tmp[0] - '0') * 1000 + (brightness_tmp[1] - '0') * 100 + (brightness_tmp[2] - '0') * 10 + brightness_tmp[3] - '0';
-      break;
-    default:
-      break;
-    }
-    brightness = brightness > 7200 ? 7200 : brightness;
-    __HAL_TIM_SET_COMPARE(&TIM_BL, TIM_CHANNEL_2, brightness);
-    HAL_UARTEx_ReceiveToIdle_DMA(&UART_PC, &brightness_tmp[0], 4);
-    __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
-  }
   return;
 }
 /* USER CODE END 4 */
