@@ -24,7 +24,7 @@
 #define MY_DISP_HOR_RES    320
 #define MY_DISP_VER_RES    240
 
-#define LV_BUFFER_SIZE (MY_DISP_HOR_RES * 20)
+#define LV_BUFFER_SIZE (MY_DISP_HOR_RES * 30)
 
 /**********************
  *      TYPEDEFS
