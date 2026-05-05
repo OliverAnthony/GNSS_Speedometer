@@ -285,7 +285,14 @@ void LVGL_UI_Refresh(void)
   lv_label_set_text_fmt(time_label, "%02d:%02d:%02d", NMEAData.hour, NMEAData.minute, NMEAData.second);
   lv_label_set_text_fmt(quality_label, "%c", NMEAData.quality);
   lv_label_set_text_fmt(satelliteCount_label, "%d", NMEAData.satelliteCount);
-  lv_label_set_text_fmt(altitude_label, "%d.%01d", NMEAData.altitude.integer, NMEAData.altitude.decimal);
+  if (!NMEAData.altitude.sign)
+  {
+    lv_label_set_text_fmt(altitude_label, "%d.%01d", NMEAData.altitude.integer, NMEAData.altitude.decimal);
+  }
+  else
+  {
+    lv_label_set_text_fmt(altitude_label, "-%d.%01d", NMEAData.altitude.integer, NMEAData.altitude.decimal);
+  }
   lv_label_set_text_fmt(hdop_label, "%d.%02d", NMEAData.hdop.integer, NMEAData.hdop.decimal);
   lv_label_set_text_fmt(vdop_label, "%d.%02d", NMEAData.vdop.integer, NMEAData.vdop.decimal);
   return;

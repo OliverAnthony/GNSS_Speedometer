@@ -5,6 +5,7 @@
 
 typedef struct
 {
+  _Bool sign; // 0 for positive, 1 for negative
   uint16_t integer, decimal;
   uint8_t precision;
 } decimal_t;

@@ -135,9 +135,15 @@ __attribute__((always_inline))
 static inline decimal_t Str2Dec(const uint8_t* str, uint16_t index, const uint16_t size)
 {
   decimal_t dec;
+  dec.sign = 0;
   dec.integer = 0;
   dec.decimal = 0;
   dec.precision = 0;
+  if (str[index] == '-')
+  {
+    dec.sign = 1;
+    index++;
+  }
   while (str[index] >= '0' && str[index] <= '9' && index < size)
   {
     dec.integer = dec.integer * 10 + (str[index++] - '0');
