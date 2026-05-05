@@ -1,6 +1,9 @@
 #include "nmea.h"
 
 NMEAData_t NMEAData;
+static inline uint16_t FindNextHeader(const uint8_t* package, uint16_t index, const uint16_t size);
+static inline uint16_t OffsetField(const uint8_t* package, uint16_t index, const uint8_t number, const uint16_t size);
+static inline decimal_t Str2Dec(const uint8_t* str, uint16_t index, const uint16_t size);
 
 void NMEAHandler(const uint8_t* package, const uint16_t size)
 {
